@@ -1,0 +1,192 @@
+1) Answer of Q1
+	a) Save file with BiasedEvent.java and run on command prompt using below command
+		javac filename.java
+		java filename
+
+
+		import java.util.ArrayList;
+		import java.util.List;
+		import java.util.Random;
+
+		class BiasedEvent {
+			private List<BiasOutcome> outcomes = new ArrayList<>();
+			private Random random = new Random();
+
+			public void addOutcome(String outcome, int probability) {
+				outcomes.add(new BiasOutcome(outcome, probability));
+			}
+
+			public String triggerEvent() {
+				int totalProbability = outcomes.stream().mapToInt(BiasOutcome::getProbability).sum();
+				int randomValue = random.nextInt(totalProbability);
+
+				int cumulativeProbability = 0;
+				for (BiasOutcome biasOutcome : outcomes) {
+					cumulativeProbability += biasOutcome.getProbability();
+					if (randomValue < cumulativeProbability) {
+						return biasOutcome.getOutcome();
+					}
+				}
+
+				// This should not be reached, but return a default outcome if needed
+				return "Default Outcome";
+			}
+
+			public List<String> simulateEvent(int numberOfOccurrences) {
+				List<String> occurrences = new ArrayList<>();
+				for (int i = 0; i < numberOfOccurrences; i++) {
+					String outcome = triggerEvent();
+					occurrences.add(outcome);
+				}
+				return occurrences;
+			}
+		}
+
+		class BiasOutcome {
+			private String outcome;
+			private int probability;
+
+			public BiasOutcome(String outcome, int probability) {
+				this.outcome = outcome;
+				this.probability = probability;
+			}
+
+			public String getOutcome() {
+				return outcome;
+			}
+
+			public int getProbability() {
+				return probability;
+			}
+		}
+
+		public class Main {
+			public static void main(String[] args) {
+				BiasedEvent coinFlip = new BiasedEvent();
+				coinFlip.addOutcome("Head", 35);
+				coinFlip.addOutcome("Tail", 65);
+
+				List<String> occurrences = coinFlip.simulateEvent(1000);
+
+				int headCount = 0;
+				int tailCount = 0;
+
+				for (String outcome : occurrences) {
+					if (outcome.equals("Head")) {
+						headCount++;
+					} else if (outcome.equals("Tail")) {
+						tailCount++;
+					}
+				}
+
+				System.out.println("Head appeared " + headCount + " times");
+				System.out.println("Tail appeared " + tailCount + " times");
+			}
+		}
+
+
+======================================================================
+2) Answer of Q2
+	a) Save file with index.js and run on VS code using below command
+		node index.js
+	b) Use below curl -
+			curl --location 'http://10.140.38.101:6031/v1/expression' \
+			--header 'Content-Type: application/json' \
+			--data '{
+				"expression":"2+2"
+			}'
+			
+		const express = require('express');
+		const bodyParser = require('body-parser');
+		const rateLimit = require('express-rate-limit');
+
+		const app = express();
+
+		app.use(bodyParser.json());
+
+		//applied rate limit- 50 request per second
+		const apiLimiter = rateLimit({
+		  windowMs: 1000, 
+		  max: 50, // 50 requests per second
+		});
+
+
+		app.use('/v1/expression', apiLimiter)
+		//async function to accept post request
+		app.use('/v1/expression', apiLimiter, async (req, res) => {
+			function evaluateExpression(expression) {
+			  return new Promise((resolve, reject) => {
+				request.post(
+				  {
+					url: apiURL,
+					json: { expression },
+				  },
+				  (error, response, body) => {
+					if (!error && response.statusCode === 200) {
+					  console.log(`Expression: ${expression}, Result: ${body.result}`);
+					  resolve(body.result);
+					} else {
+					  console.error(`Error evaluating expression: ${expression}`, error || body);
+					  reject(error || body);
+					}
+				  }
+				);
+			  });
+			}
+			
+			const requestData = req.body;
+
+			const responseData = {
+			  message: 'Received data:',
+			  data: requestData,
+			};
+		  
+			res.json(responseData);
+
+			if (requestData.expression) {
+			  const expression = requestData.expression;
+			  evaluateExpression(expression)
+				.then((result) => {
+				  
+				  console.log(`Result: ${result}`);
+				})
+				.catch((error) => {
+			  
+				  console.error(`Error in evaluating expression: ${expression}`, error);
+				});
+			}
+		  });
+		 
+		const port = process.env.PORT || 3000; 
+
+		app.listen(port, () => {
+		  console.log(`Server is running on port ${port}`);
+		});
+
+
+===================================================================================
+3) Answer of  Q3
+  a) made correction in 2 lines .
+		1. In for loop i<$LIM change to i<=$LIM
+		2. Made changes in last line in else condition  $((OUT / 2 )) to $((OUT / 2 + LIM ))
+
+		#!/bin/bash
+		N=4
+		if [ $N -lt 10 ]
+		then
+				OUT=$((N*N))
+		elif [ $N -lt 20 ]
+		then
+				OUT=1
+				LIM=$((N - 10))
+				for (( i=1; i<=$LIM; i++ ))
+				do
+						OUT=$((OUT * i))
+				done
+		else
+				LIM=$((N - 20))
+				OUT=$((LIM * LIM))
+				OUT=$((OUT - LIM))
+				OUT=$((OUT / 2 + LIM ))
+		fi
+		echo $OUT
